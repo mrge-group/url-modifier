@@ -1,56 +1,84 @@
 <?php
 
-namespace digidip\RuleApplier\Tests;
+namespace digidip\UrlModifier\Tests;
 
+use digidip\UrlModifier\Entities\ProgramParams;
+use digidip\UrlModifier\Entities\Rule;
+use digidip\UrlModifier\UrlModifier;
 use PHPUnit\Framework\TestCase;
 
-class RuleApplierTest extends TestCase
+class UrlModifierTest extends TestCase
 {
     /**
-     * This test checks the results and the execution time of a request for getting an url without rules.
+     * @dataProvider providerParams
      */
-    public function testGetPreviewLinkWithoutRules()
+    public function testGetLink(ProgramParams $params, string $expectedUrl)
     {
-        $params = new ProgramParams();
+        $ruleApplier = new UrlModifier();
 
-        $url = "http://argos.co.uk";
-        $deeplink = "http://www.anrdoezrs.net/links/1546795/type/dlg/sid/{click_key}/{url_encoded_3}";
+        $affcode = '5798314733';
+        $params->setCpi($affcode);
+        $params->setAffcode($affcode);
+        $params->setClickKey('XXX0031');
 
-        $params->setClickKey("dsfadgga2412");
-        $params->setAffcode("fadva324");
-        $params->setCpi("vdsv34");
+        $previewLink = $ruleApplier->getLink($params);
 
-        $previewLink = RulesApplier::getLink($url, $deeplink, $params);
-
-        self::assertNotEmpty($previewLink);
-
-        echo print_r($previewLink, true);
+        self::assertSame($expectedUrl, $previewLink);
     }
 
-    /**
-     * This test checks the results and the execution time of a request for getting an url with rules.
-     */
-    public function testGetPreviewLinkWithAddParamRule()
+    public function providerParams(): array
     {
-        $params = new ProgramParams();
+        $testUrl = 'https://www.test.com/';
+        $testNetworkUrl = 'https://testnetwork.com/';
 
-        $url = "https://www.etna.com.br/";
-        $rules = [
-            RulesApplier::TYPE => Rule::ADD_PARAM_TYPE,
-            RulesApplier::VALUE1 => "utm_source",
-            RulesApplier::VALUE2 => "zanox"
+        $noRulesDbEncParams = new ProgramParams($testUrl,
+            $testNetworkUrl . 'cread.php?awid=31&affid={cpi}&ckref={click_key}&p=%5B%5B{url_encoded_2}%5D%5D');
+        $noRulesSingEncParams = new ProgramParams($testUrl,
+            $testNetworkUrl . 'click/camref:1100lqou/pubref:{click_key}/destination:{url_encoded_1}');
+        $noRulesNoEncParams = new ProgramParams($testUrl,
+            $testNetworkUrl . 'click.html?campid={affcode}&wgproid=98&ckref={click_key}&target={url_encoded_0}');
+
+        $addParams = new ProgramParams($testUrl,
+            $testNetworkUrl . 'cread.php?awid=57&affid={cpi}&ckref={click_key}&p=%5B%5B{url_encoded_2}%5D%5D');
+        $mods = [
+            new Rule(2, Rule::ADD_PARAM_TYPE, 'utm_medium', 'afiliacja'),
+            new Rule(1, Rule::ADD_PARAM_TYPE, 'utm_source', 'salestube.pl'),
+            new Rule(3, Rule::ADD_PARAM_TYPE, 'utm_content', '253367997'),
+            new Rule(4, Rule::ADD_PARAM_TYPE, 'Partner_ID', '!!!awc!!')
         ];
-        $deeplink = "https://ad.zanox.com/ppc/?37154522C19266018&zpar0=[[{click_key}]]&ULP=[[{url_encoded_1}]]";
+        $addParams->setMods($mods);
 
-        $params->setClickKey("dsfadgga2412");
-        $params->setAffcode("fadva324");
-        $params->setCpi("vdsv34");
+        $delParams = new ProgramParams($testUrl . 'pp_009432162459.html?wid=1433363',
+            $testNetworkUrl . '?c=31&m=98&a={affcode}&r={click_key}&u={url_encoded_1}');
+        $mods = [
+            new Rule(1, Rule::DEL_PARAM_TYPE, 'vip'),
+            new Rule(2, Rule::DEL_PARAM_TYPE, 'lkid'),
+            new Rule(3, Rule::REGEXP_TYPE, '/wid_[a-zA-Z0-9_-]+_wid=[a-zA-Z0-9_-]+/', '1=1')
+        ];
+        $delParams->setMods($mods);
 
-        $previewLink = RulesApplier::getLink($url, $deeplink, $params, [$rules]);
-
-        self::assertNotEmpty($previewLink);
-
-        echo print_r($previewLink, true);
+        return [
+            [
+                $noRulesDbEncParams,
+                $testNetworkUrl . 'cread.php?awid=31&affid=5798314733&ckref=XXX0031&p=%5B%5Bhttps%253A%252F%252Fwww.test.com%252F%5D%5D'
+            ],
+            [
+                $noRulesSingEncParams,
+                $testNetworkUrl . 'click/camref:1100lqou/pubref:XXX0031/destination:https%3A%2F%2Fwww.test.com%2F'
+            ],
+            [
+                $noRulesNoEncParams,
+                $testNetworkUrl . 'click.html?campid=5798314733&wgproid=98&ckref=XXX0031&target=https://www.test.com/'
+            ],
+            [
+                $addParams,
+                $testNetworkUrl . 'cread.php?awid=57&affid=5798314733&ckref=XXX0031&p=%5B%5Bhttps%253A%252F%252Fwww.test.com%253Futm_source%253Dsalestube.pl%2526utm_medium%253Dafiliacja%2526utm_content%253D253367997%2526Partner_ID%253D%2521%2521%2521awc%2521%2521%5D%5D'
+            ],
+            [
+                $delParams,
+                $testNetworkUrl . '?c=31&m=98&a=5798314733&r=XXX0031&u=https%3A%2F%2Fwww.test.com%2Fpp_009432162459.html%3Fwid%3D1433363'
+            ]
+        ];
     }
 
     /**

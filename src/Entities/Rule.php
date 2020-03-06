@@ -1,6 +1,6 @@
 <?php
 
-namespace digidip\RuleApplier\Entities;
+namespace digidip\UrlModifier\Entities;
 
 class Rule
 {
@@ -22,24 +22,22 @@ class Rule
     private $value2;
     private $modKeys;
 
+    public function __construct(int $sort, string $type, string $value1 = null, string $value2 = null)
+    {
+        $this->sort = $sort;
+        $this->type = $type;
+        $this->value1 = $value1;
+        $this->value2 = $value2;
+    }
+
     public function getSort(): int
     {
         return $this->sort;
     }
 
-    public function setSort(int $sort)
-    {
-        $this->sort = $sort;
-    }
-
     public function getType(): string
     {
         return $this->type;
-    }
-
-    public function setType(string $type)
-    {
-        $this->type = $type;
     }
 
     public function getValue1(): ?string

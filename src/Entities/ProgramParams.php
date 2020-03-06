@@ -1,8 +1,6 @@
 <?php
 
-namespace digidip\RuleApplier\Entities;
-
-use Illuminate\Support\Collection;
+namespace digidip\UrlModifier\Entities;
 
 class ProgramParams
 {
@@ -15,8 +13,8 @@ class ProgramParams
 
     public function __construct(string $url, string $deeplink)
     {
+        $this->mods = [];
         $this->url = $url;
-        $this->mods = collect();
         $this->deeplink = $deeplink;
     }
 
@@ -35,12 +33,12 @@ class ProgramParams
         $this->cpi = $cpi;
     }
 
-    public function getMods(): Collection
+    public function getMods(): array
     {
         return $this->mods;
     }
 
-    public function setMods(Collection $mods)
+    public function setMods(array $mods)
     {
         $this->mods = $mods;
     }

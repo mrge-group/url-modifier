@@ -1,20 +1,14 @@
 <?php
 
-namespace digidip\RulesApplier;
+namespace digidip\UrlModifier;
 
-use digidip\RuleApplier\Entities\ProgramParams;
-use digidip\RuleApplier\Entities\Rule;
-use Purl\Url;
+use digidip\UrlModifier\Entities\ProgramParams;
+use digidip\UrlModifier\Entities\Rule;
+use Spatie\Url\Url;
 
-class RuleApplier
+class UrlModifier
 {
-    const CPI = '{cpi}';
-    const URL = '{url}';
-    const RAW_URL = '{raw_url}';
     const AFFCODE = '{affcode}';
-    const CLICK_KEY = '{click_key}';
-    const URL_ENCODED_0 = '{url_encoded_0}';
-    const URL_ENCODED_1 = '{url_encoded_1}';
 
     public function getLink(ProgramParams $params): string
     {
@@ -22,28 +16,27 @@ class RuleApplier
         $deeplink = $params->getDeeplink();
 
         $modKeys = [
-            self::CPI => $params->getCpi(),
+            '{cpi}' => $params->getCpi(),
             self::AFFCODE => $params->getAffcode(),
-            self::CLICK_KEY => $params->getClickKey()
+            '{click_key}' => $params->getClickKey()
         ];
 
-        $rules = $params->getMods()->sortBy(function ($rule) {
-            /** @var Rule $rule */
-            return $rule->getSort();
+        $mods = $params->getMods();
+        usort($mods, function ($firstRule, $secondRule) {
+            /** @var Rule $firstRule */
+            /** @var Rule $secondRule */
+            return ($firstRule->getSort() < $secondRule->getSort()) ? -1 : (($firstRule->getSort() > $secondRule->getSort()) ? 1 : 0);
         });
 
         /** @var Rule $rule */
-        foreach ($rules as $rule) {
+        foreach ($mods as $rule) {
             $rule->setModKeys($modKeys);
             $url = $this->applyRule($url, $rule);
         }
 
-        $modKeys += [self::URL => self::URL_ENCODED_1, self::RAW_URL => self::URL_ENCODED_0];
         $deeplink = str_replace(array_keys($modKeys), $modKeys, $deeplink);
 
-        $deeplink = $this->encodeUrl($deeplink, $url);
-
-        return $deeplink;
+        return $this->encodeUrl($deeplink, $url);
     }
 
     private function applyRule(string $previousUrl, Rule $rule): string
@@ -117,11 +110,7 @@ class RuleApplier
             return $previousUrl;
         }
 
-        $url = Url::parse($previousUrl);
-        $url->query->set($name, $value);
-        $url = $url->getUrl();
-
-        return $url;
+        return Url::fromString($previousUrl)->withQueryParameter($name, $value);
     }
 
     private function appendRawParam(string $previousUrl, string $name = null, string $value = null): string
@@ -147,11 +136,7 @@ class RuleApplier
             return $previousUrl;
         }
 
-        $url = Url::parse($previousUrl);
-        $url->query->remove($value);
-        $url = $url->getUrl();
-
-        return $url;
+        return Url::fromString($previousUrl)->withoutQueryParameter($value);
     }
 
     private function lTrim(string $previousUrl, string $value = null): string
