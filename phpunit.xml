@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit backupGlobals="false"
+         backupStaticAttributes="false"
+         bootstrap="bootstrap/autoload.php"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false">
+    <testsuites>
+        <testsuite name="Http Suite">
+            <directory suffix="Tests.php">./tests/Http</directory>
+        </testsuite>
+        <testsuite name="Task Suite">
+            <directory suffix="Tests.php">./tests/Tasks</directory>
+        </testsuite>
+        <testsuite name="Trait Suite">
+            <directory suffix="Tests.php">./tests/Traits</directory>
+        </testsuite>
+        <testsuite name="Service Suite">
+            <directory suffix="Tests.php">./tests/Services</directory>
+        </testsuite>
+        <testsuite name="Controller Api Suite">
+            <directory suffix="Tests.php">./tests/Controllers/Api</directory>
+        </testsuite>
+        <testsuite name="Controller Auth Suite">
+            <directory suffix="Tests.php">./tests/Controllers/Auth</directory>
+        </testsuite>
+        <testsuite name="Controller Import Suite">
+            <directory suffix="Tests.php">./tests/Controllers/Import</directory>
+        </testsuite>
+        <testsuite name="Controller Common Suite">
+            <directory suffix="Tests.php">./tests/Controllers/Common</directory>
+        </testsuite>
+        <testsuite name="Controller Merchant Suite">
+            <directory suffix="Tests.php">./tests/Controllers/Merchant</directory>
+        </testsuite>
+        <testsuite name="Controller Admin Suite">
+            <directory suffix="Tests.php">./tests/Controllers/Admin/Project</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Admin/Finance</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Admin/Merchant</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Admin/Publisher</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Admin/Disbursement</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Admin/PaymentInFile</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Admin/Affcode/ListController</directory>
+        </testsuite>
+        <testsuite name="Controller Publisher Suite">
+            <directory suffix="Tests.php">./tests/Controllers/Publisher/Affcode</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Publisher/Project</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Publisher/Merchant</directory>
+            <directory suffix="Tests.php">./tests/Controllers/Publisher/Profile/SingleController</directory>
+        </testsuite>
+        <testsuite name="Fabi Importer">
+            <directory suffix="Test.php">./tests/Services/Fabi/Transactions</directory>
+        </testsuite>
+    </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./app</directory>
+            <exclude>
+                <file>./app/Services/Networks/ImporterClientService.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="junit" target="./storage/files/test-reports/logfile.xml"/>
+        <log type="coverage-clover" target="./storage/files/test-reports/coverage.xml"/>
+    </logging>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="APP_LOG_LEVEL" value="warning"/>
+        <env name="CACHE_DRIVER" value="file"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_DRIVER" value="database"/>
+        <env name="DB_HOST" value="testdb"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="JWT_SECRET" value="JWT-secret-testing-key"/>
+        <ini name="memory_limit" value="2048M"/>
+    </php>
+</phpunit>
