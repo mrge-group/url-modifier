@@ -16,7 +16,7 @@ class UrlModifier
         $deeplink = $params->getDeeplink();
 
         $modKeys = [
-            '{cpi}' => $params->getCpi(),
+            '{cpi}'       => $params->getCpi(),
             self::AFFCODE => $params->getAffcode(),
             '{click_key}' => $params->getClickKey()
         ];
@@ -25,7 +25,8 @@ class UrlModifier
         usort($mods, function ($firstRule, $secondRule) {
             /** @var Rule $firstRule */
             /** @var Rule $secondRule */
-            return ($firstRule->getSort() < $secondRule->getSort()) ? -1 : (($firstRule->getSort() > $secondRule->getSort()) ? 1 : 0);
+            return ($firstRule->getSort() < $secondRule->getSort()) ? -1 : (($firstRule->getSort()
+                                                                             > $secondRule->getSort()) ? 1 : 0);
         });
 
         /** @var Rule $rule */
@@ -63,15 +64,8 @@ class UrlModifier
                 return $this->trim2q($url);
             case Rule::REGEXP_TYPE:
                 return $this->regexp($url, $rule->getValue1(), $rule->getValue2());
-            case Rule::GEENAPP_TYPE:
-                return $this->geenapp($url, $rule->getValue1());
             case Rule::URL_EMBED_TYPE:
-
-                $value1 = $rule->getValue1();
-                $value1 = $this->encodeUrl($value1, $url);
-                $rule->setValue1($value1);
-
-                return $rule->getValue1();
+                return $this->encodeUrl($rule->getValue1(), $url);
             case Rule::BASE64_TYPE:
                 return base64_encode($url);
             case Rule::ENCODE_PARAM_TYPE:
@@ -121,8 +115,8 @@ class UrlModifier
 
         $url = $previousUrl . '&';
 
-        if (!strpos($url, '?')) {
-            $url .= substr($url, 0, -1) . '?';
+        if (strpos($url, '?') == false) {
+            $url = substr($url, 0, -1) . '?';
         }
 
         $url .= $name . '=' . $value;
@@ -152,14 +146,13 @@ class UrlModifier
 
     private function trim2q(string $previousUrl): string
     {
-        $url = Url::parse($previousUrl);
         $url = [
-            (string)$url->path->getPath(),
-            ($url->query->getQuery()) ? ('?' . $url->query->getQuery()) : '',
-            ($url->fragment->getFragment()) ? ('#' . $url->fragment->getFragment()) : '',
+            implode('/', Url::fromString($previousUrl)->getSegments()),
+            (Url::fromString($previousUrl)->getQuery()) ? ('?' . Url::fromString($previousUrl)->getQuery()) : '',
+            (Url::fromString($previousUrl)->getFragment()) ? ('#' . Url::fromString($previousUrl)->getFragment()) : ''
         ];
 
-        return ltrim(implode($url), '/');
+        return implode($url);
     }
 
     private function regexp(string $previousUrl, string $search = null, string $replace = null): string
@@ -171,73 +164,26 @@ class UrlModifier
         return preg_replace($search, $replace, $previousUrl);
     }
 
-    /**
-     * Converts a URL with the geenapp myUrl API
-     * See https://publisher.geenapp.com/myurl.php
-     */
-    private function geenapp(string $previousUrl, string $projectId = null): string
-    {
-        if (empty($projectId)) {
-            return $previousUrl;
-        }
-
-        $url = trim($previousUrl);
-
-        $urlApiCall = 'http://myurl.geenapptool.com/?' . http_build_query(['p' => $projectId, 'url' => $url]);
-
-        $content = trim(file_get_contents($urlApiCall));
-
-        if (empty($content)) {
-            return $url;
-        }
-
-        $filteredUrl = filter_var($content, FILTER_VALIDATE_URL);
-        if (strcasecmp($content, $filteredUrl) == 0) {
-            $url = $content;
-        }
-
-        return $url;
-    }
-
     private function encodeParamValue(string $previousUrl, string $name = null): string
     {
         if (empty($name)) {
             return $previousUrl;
         }
 
-        $url = Url::parse($previousUrl);
-        $value = $url->query->get($name);
-
+        $value = Url::fromString($previousUrl)->getQueryParameter($name);
         if (!is_null($value)) {
             $value = urlencode($value);
-            $url->query->set($name, $value);
+
+            return Url::fromString($previousUrl)->withQueryParameter($name, $value);
         }
 
-        $url = $url->getUrl();
-
-        return $url;
+        return $previousUrl;
     }
 
     private function lomadee(string $previousUrl, int $affiliateCode): string
     {
         $url = $previousUrl;
 
-        $apiToken = '6249536e6a4b55694763773d';
-
-        $urlApiCall = 'http://bws.buscape.com.br/service/createLinks/lomadee/' . $apiToken . '/BR/?'
-            . http_build_query(['sourceId' => $affiliateCode, 'format' => 'json', 'link1' => $url]);
-
-        $rawResponse = file_get_contents($urlApiCall);
-        $jsonResponse = json_decode($rawResponse);
-
-        if ((empty($jsonResponse)) || (!isset($jsonResponse->lomadeelinks[0]->lomadeelink->redirectlink))) {
-            return $url;
-        }
-
-        if (!empty($jsonResponse->lomadeelinks[0]->lomadeelink->redirectlink)) {
-            return $jsonResponse->lomadeelinks[0]->lomadeelink->redirectlink;
-        }
-
-        return $url;
+        return sprintf('https://redir.lomadee.com/v2/deeplink?url=%s&sourceId=%s', urlencode($url), $affiliateCode);
     }
 }
