@@ -7,7 +7,6 @@ class Rule
     const LTRIM_TYPE = 'ltrim';
     const TRIM2Q_TYPE = 'trim2q';
     const REGEXP_TYPE = 'regexp';
-    const GEENAPP_TYPE = 'geenapp';
     const LOMADEE_TYPE = 'lomadee';
     const ADD_PARAM_TYPE = 'addparam';
     const DEL_PARAM_TYPE = 'delparam';

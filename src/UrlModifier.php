@@ -25,8 +25,11 @@ class UrlModifier
         usort($mods, function ($firstRule, $secondRule) {
             /** @var Rule $firstRule */
             /** @var Rule $secondRule */
-            return ($firstRule->getSort() < $secondRule->getSort()) ? -1 : (($firstRule->getSort()
-                                                                             > $secondRule->getSort()) ? 1 : 0);
+            if ($firstRule->getSort() < $secondRule->getSort()) {
+                return -1;
+            }
+
+            return (($firstRule->getSort() > $secondRule->getSort()) ? 1 : 0);
         });
 
         /** @var Rule $rule */
@@ -44,37 +47,61 @@ class UrlModifier
     {
         $url = $previousUrl;
 
-        if (!empty($rule->getValue1())) {
-            $rule->setValue1(str_replace(array_keys($rule->getModKeys()), $rule->getModKeys(), $rule->getValue1()));
+        if (empty($rule->getValue1())) {
+            return $this->applySimpleRule($previousUrl, $rule);
         }
+
+        $rule->setValue1(str_replace(array_keys($rule->getModKeys()), $rule->getModKeys(), $rule->getValue1()));
+
         if (!empty($rule->getValue2())) {
             $rule->setValue2(str_replace(array_keys($rule->getModKeys()), $rule->getModKeys(), $rule->getValue2()));
         }
 
         switch ($rule->getType()) {
             case Rule::ADD_PARAM_TYPE:
-                return $this->addParam($url, $rule->getValue1(), $rule->getValue2());
+                $url = $this->addParam($url, $rule->getValue1(), $rule->getValue2());
+                break;
             case Rule::RAW_PARAM_TYPE:
-                return $this->appendRawParam($url, $rule->getValue1(), $rule->getValue2());
+                $url = $this->appendRawParam($url, $rule->getValue1(), $rule->getValue2());
+                break;
             case Rule::DEL_PARAM_TYPE:
-                return $this->delParam($url, $rule->getValue1());
+                $url = $this->delParam($url, $rule->getValue1());
+                break;
             case Rule::LTRIM_TYPE:
-                return $this->lTrim($url, $rule->getValue1());
-            case Rule::TRIM2Q_TYPE:
-                return $this->trim2q($url);
+                $url = $this->lTrim($url, $rule->getValue1());
+                break;
             case Rule::REGEXP_TYPE:
-                return $this->regexp($url, $rule->getValue1(), $rule->getValue2());
+                $url = $this->regexp($url, $rule->getValue1(), $rule->getValue2());
+                break;
             case Rule::URL_EMBED_TYPE:
-                return $this->encodeUrl($rule->getValue1(), $url);
-            case Rule::BASE64_TYPE:
-                return base64_encode($url);
-            case Rule::ENCODE_PARAM_TYPE:
+                $url = $this->encodeUrl($rule->getValue1(), $url);
+                break;
+            default:
                 return $this->encodeParamValue($url, $rule->getValue1());
+        }
+
+        return $url;
+    }
+
+    private function applySimpleRule(string $previousUrl, Rule $rule): string
+    {
+        $url = $previousUrl;
+
+        switch ($rule->getType()) {
+            case Rule::TRIM2Q_TYPE:
+                $url = $this->trim2q($url);
+                break;
+            case Rule::BASE64_TYPE:
+                $url = base64_encode($url);
+                break;
             case Rule::LOMADEE_TYPE:
-                return $this->lomadee($url, $rule->getModKeys()[self::AFFCODE]);
+                $url = $this->lomadee($url, $rule->getModKeys()[self::AFFCODE]);
+                break;
             default:
                 return $url;
         }
+
+        return $url;
     }
 
     private function encodeUrl(string $previousDeeplink, string $url): string
@@ -115,13 +142,11 @@ class UrlModifier
 
         $url = $previousUrl . '&';
 
-        if (strpos($url, '?') == false) {
+        if (!strpos($url, '?')) {
             $url = substr($url, 0, -1) . '?';
         }
 
-        $url .= $name . '=' . $value;
-
-        return $url;
+        return $url . $name . '=' . $value;
     }
 
     private function delParam(string $previousUrl, string $value = null): string
