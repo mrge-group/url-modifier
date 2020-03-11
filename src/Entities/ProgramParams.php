@@ -10,6 +10,7 @@ class ProgramParams
     private $affcode;
     private $deeplink;
     private $clickKey;
+    private $projectName;
 
     public function __construct(string $url, string $deeplink)
     {
@@ -66,5 +67,15 @@ class ProgramParams
     public function setClickKey(string $clickKey)
     {
         $this->clickKey = $clickKey;
+    }
+
+    public function getProjectName(): string
+    {
+        return $this->projectName;
+    }
+
+    public function setProjectName(string $projectName)
+    {
+        $this->projectName = $projectName;
     }
 }

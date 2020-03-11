@@ -22,6 +22,7 @@ class UrlModifierTest extends TestCase
         $params->setCpi($affcode);
         $params->setAffcode($affcode);
         $params->setClickKey('XXX0031');
+        $params->setProjectName($affcode);
 
         $previewLink = $ruleApplier->getLink($params);
 

@@ -16,9 +16,10 @@ class UrlModifier
         $deeplink = $params->getDeeplink();
 
         $modKeys = [
-            '{cpi}'       => $params->getCpi(),
-            self::AFFCODE => $params->getAffcode(),
-            '{click_key}' => $params->getClickKey()
+            '{cpi}'          => $params->getCpi(),
+            self::AFFCODE    => $params->getAffcode(),
+            '{click_key}'    => $params->getClickKey(),
+            '{project_name}' => $params->getProjectName()
         ];
 
         $mods = $params->getMods();
