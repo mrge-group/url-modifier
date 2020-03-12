@@ -17,6 +17,11 @@
     "phpunit/phpunit": "^8",
     "phpmd/phpmd": "@stable"
   },
+  "autoload": {
+    "psr-4": {
+      "digidip\\UrlModifier\\": "src"
+    }
+  },
   "autoload-dev": {
     "psr-4": {
       "digidip\\UrlModifier\\": "src"
