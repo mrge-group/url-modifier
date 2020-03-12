@@ -66,8 +66,9 @@ class UrlModifierTest extends TestCase
                 . '.com%252F%5D%5D'
             ],
             [
-                $this->getParams('click/camref:1100lqou/pubref:{click_key}/destination:{url_encoded_1}'),
-                self::TEST_URL . 'click/camref:1100lqou/pubref:XXX0031/destination:https%3A%2F%2Fwww.test.com%2F'
+                $this->getParams('ck/cmref:1100lqo/pbref:{click_key}/proj:{project_name}/destination:{url_encoded_1}'),
+                self::TEST_URL . 'ck/cmref:1100lqo/pbref:XXX0031/proj:5798314733/destination:'
+                . 'https%3A%2F%2Fwww.test.com%2F'
             ],
             [
                 $this->getParams('click.html?campid={affcode}&wgproid=98&ckref={click_key}&target={url_encoded_0}'),
