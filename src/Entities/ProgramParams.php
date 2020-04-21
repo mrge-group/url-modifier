@@ -14,6 +14,7 @@ class ProgramParams
 
     public function __construct(string $url, string $deeplink)
     {
+        $this->cpi = '';
         $this->mods = [];
         $this->url = $url;
         $this->deeplink = $deeplink;
