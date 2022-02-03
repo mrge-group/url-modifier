@@ -4,22 +4,26 @@ namespace digidip\UrlModifier\Entities;
 
 class Rule
 {
-    const LTRIM_TYPE = 'ltrim';
-    const TRIM2Q_TYPE = 'trim2q';
-    const REGEXP_TYPE = 'regexp';
-    const LOMADEE_TYPE = 'lomadee';
-    const ADD_PARAM_TYPE = 'addparam';
-    const DEL_PARAM_TYPE = 'delparam';
-    const URL_EMBED_TYPE = 'url_embed';
-    const BASE64_TYPE = 'base64encode';
-    const RAW_PARAM_TYPE = 'appendrawparam';
-    const ENCODE_PARAM_TYPE = 'encodeparamvalue';
+    public const LTRIM_TYPE = 'ltrim';
+    public const TRIM2Q_TYPE = 'trim2q';
+    public const REGEXP_TYPE = 'regexp';
+    public const LOMADEE_TYPE = 'lomadee';
+    public const ADD_PARAM_TYPE = 'addparam';
+    public const DEL_PARAM_TYPE = 'delparam';
+    public const URL_EMBED_TYPE = 'url_embed';
+    public const BASE64_TYPE = 'base64encode';
+    public const RAW_PARAM_TYPE = 'appendrawparam';
+    public const ENCODE_PARAM_TYPE = 'encodeparamvalue';
 
-    private $sort;
-    private $type;
-    private $value1;
-    private $value2;
-    private $modKeys;
+    /**
+     * @var array<string, int|string>
+     */
+    private array $modKeys;
+
+    private int $sort;
+    private string $type;
+    private ?string $value1;
+    private ?string $value2;
 
     public function __construct(int $sort, string $type, string $value1 = null, string $value2 = null)
     {
@@ -39,12 +43,28 @@ class Rule
         return $this->type;
     }
 
+    /**
+     * @return array<string, int|string>
+     */
+    public function getModKeys(): array
+    {
+        return $this->modKeys;
+    }
+
+    /**
+     * @param array<string, int|string> $modKeys
+     */
+    public function setModKeys(array $modKeys): void
+    {
+        $this->modKeys = $modKeys;
+    }
+
     public function getValue1(): ?string
     {
         return $this->value1;
     }
 
-    public function setValue1(?string $value1)
+    public function setValue1(?string $value1): void
     {
         $this->value1 = $value1;
     }
@@ -54,18 +74,8 @@ class Rule
         return $this->value2;
     }
 
-    public function setValue2(?string $value2)
+    public function setValue2(?string $value2): void
     {
         $this->value2 = $value2;
-    }
-
-    public function getModKeys(): array
-    {
-        return $this->modKeys;
-    }
-
-    public function setModKeys(array $modKeys)
-    {
-        $this->modKeys = $modKeys;
     }
 }
