@@ -12,7 +12,8 @@ install:
   stage: build
   script:
     - apt-get update -yqq
-    - apt-get install -yqq git
+    - apt-get install -yqq git zlib1g-dev libzip-dev
+    - docker-php-ext-install zip
     - curl -sS https://getcomposer.org/installer | php
     - php composer.phar self-update
     - php composer.phar install -o --no-scripts
