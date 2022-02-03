@@ -8,7 +8,7 @@ use Spatie\Url\Url;
 
 class UrlModifier
 {
-    const AFFCODE = '{affcode}';
+    private const AFFCODE = '{affcode}';
 
     public function getLink(ProgramParams $params): string
     {
@@ -19,13 +19,12 @@ class UrlModifier
             '{cpi}'          => $params->getCpi(),
             self::AFFCODE    => $params->getAffcode(),
             '{click_key}'    => $params->getClickKey(),
+            '{project_id}'   => $params->getProjectId(),
             '{project_name}' => $params->getProjectName()
         ];
 
         $mods = $params->getMods();
-        usort($mods, function ($firstRule, $secondRule) {
-            /** @var Rule $firstRule */
-            /** @var Rule $secondRule */
+        usort($mods, function (Rule $firstRule, Rule $secondRule) {
             if ($firstRule->getSort() < $secondRule->getSort()) {
                 return -1;
             }
@@ -33,18 +32,17 @@ class UrlModifier
             return (($firstRule->getSort() > $secondRule->getSort()) ? 1 : 0);
         });
 
-        /** @var Rule $rule */
         foreach ($mods as $rule) {
             $rule->setModKeys($modKeys);
-            $url = $this->applyRule($url, $rule);
+            $url = $this->applyRule($rule, $url);
         }
 
         $deeplink = str_replace(array_keys($modKeys), $modKeys, $deeplink);
 
-        return $this->encodeUrl($deeplink, $url);
+        return $this->encodeUrl($url, $deeplink);
     }
 
-    private function applyRule(string $previousUrl, Rule $rule): string
+    private function applyRule(Rule $rule, string $previousUrl): string
     {
         $url = $previousUrl;
 
@@ -75,7 +73,7 @@ class UrlModifier
                 $url = $this->regexp($url, $rule->getValue1(), $rule->getValue2());
                 break;
             case Rule::URL_EMBED_TYPE:
-                $url = $this->encodeUrl($rule->getValue1(), $url);
+                $url = $this->encodeUrl($url, $rule->getValue1());
                 break;
             default:
                 return $this->encodeParamValue($url, $rule->getValue1());
@@ -96,7 +94,7 @@ class UrlModifier
                 $url = base64_encode($url);
                 break;
             case Rule::LOMADEE_TYPE:
-                $url = $this->lomadee($url, $rule->getModKeys()[self::AFFCODE]);
+                $url = $this->lomadee($url, strval($rule->getModKeys()[self::AFFCODE]));
                 break;
             default:
                 return $url;
@@ -105,8 +103,12 @@ class UrlModifier
         return $url;
     }
 
-    private function encodeUrl(string $previousDeeplink, string $url): string
+    private function encodeUrl(string $url, ?string $previousDeeplink): string
     {
+        if(empty($previousDeeplink)){
+            return $url;
+        }
+
         $deeplink = $previousDeeplink;
         $patternFlexEncoding = '/{url_encoded_([0-9]+)}/';
 
@@ -126,7 +128,7 @@ class UrlModifier
         return $deeplink;
     }
 
-    private function addParam(string $previousUrl, string $name = null, string $value = null): string
+    private function addParam(string $previousUrl, ?string $name, ?string $value): string
     {
         if ((empty($name)) || (empty($value))) {
             return $previousUrl;
@@ -135,7 +137,7 @@ class UrlModifier
         return Url::fromString($previousUrl)->withQueryParameter($name, $value);
     }
 
-    private function appendRawParam(string $previousUrl, string $name = null, string $value = null): string
+    private function appendRawParam(string $previousUrl, ?string $name, ?string $value): string
     {
         if ((empty($name)) || (empty($value))) {
             return $previousUrl;
@@ -150,7 +152,7 @@ class UrlModifier
         return $url . $name . '=' . $value;
     }
 
-    private function delParam(string $previousUrl, string $value = null): string
+    private function delParam(string $previousUrl, ?string $value): string
     {
         if (empty($value)) {
             return $previousUrl;
@@ -159,7 +161,7 @@ class UrlModifier
         return Url::fromString($previousUrl)->withoutQueryParameter($value);
     }
 
-    private function lTrim(string $previousUrl, string $value = null): string
+    private function lTrim(string $previousUrl, ?string $value): string
     {
         $url = $previousUrl;
 
@@ -181,13 +183,19 @@ class UrlModifier
         return implode($url);
     }
 
-    private function regexp(string $previousUrl, string $search = null, string $replace = null): string
+    private function regexp(string $previousUrl, ?string $search, ?string $replace): string
     {
         if ((empty($search)) || (empty($replace))) {
             return $previousUrl;
         }
 
-        return preg_replace($search, $replace, $previousUrl);
+        $url = preg_replace($search, $replace, $previousUrl);
+
+        if(empty($url)){
+            $url = '';
+        }
+
+        return $url;
     }
 
     private function encodeParamValue(string $previousUrl, string $name = null): string
@@ -206,7 +214,7 @@ class UrlModifier
         return $previousUrl;
     }
 
-    private function lomadee(string $previousUrl, int $affiliateCode): string
+    private function lomadee(string $previousUrl, string $affiliateCode): string
     {
         $url = $previousUrl;
 
