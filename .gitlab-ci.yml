@@ -11,7 +11,8 @@ stages:
 install:
   stage: build
   script:
-    - docker-php-ext-install zip
+    - apt-get update -yqq
+    - apt-get install -yqq git
     - curl -sS https://getcomposer.org/installer | php
     - php composer.phar self-update
     - php composer.phar install -o --no-scripts
