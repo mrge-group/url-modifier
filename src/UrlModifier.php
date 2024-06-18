@@ -56,56 +56,32 @@ class UrlModifier
             $rule->setValue2(str_replace(array_keys($rule->getModKeys()), $rule->getModKeys(), $rule->getValue2()));
         }
 
-        switch ($rule->getType()) {
-            case Rule::ADD_PARAM_TYPE:
-                $url = $this->addParam($url, $rule->getValue1(), $rule->getValue2());
-                break;
-            case Rule::RAW_PARAM_TYPE:
-                $url = $this->appendRawParam($url, $rule->getValue1(), $rule->getValue2());
-                break;
-            case Rule::DEL_PARAM_TYPE:
-                $url = $this->delParam($url, $rule->getValue1());
-                break;
-            case Rule::LTRIM_TYPE:
-                $url = $this->lTrim($url, $rule->getValue1());
-                break;
-            case Rule::REGEXP_TYPE:
-                $url = $this->regexp($url, $rule->getValue1(), $rule->getValue2());
-                break;
-            case Rule::URL_EMBED_TYPE:
-                $url = $this->encodeUrl($url, $rule->getValue1());
-                break;
-            default:
-                return $this->encodeParamValue($url, $rule->getValue1());
-        }
-
-        return $url;
+        return match ($rule->getType()) {
+            Rule::ADD_PARAM_TYPE => $this->addParam($url, $rule->getValue1(), $rule->getValue2()),
+            Rule::RAW_PARAM_TYPE => $this->appendRawParam($url, $rule->getValue1(), $rule->getValue2()),
+            Rule::DEL_PARAM_TYPE => $this->delParam($url, $rule->getValue1()),
+            Rule::LTRIM_TYPE => $this->lTrim($url, $rule->getValue1()),
+            Rule::REGEXP_TYPE => $this->regexp($url, $rule->getValue1(), $rule->getValue2()),
+            Rule::URL_EMBED_TYPE => $this->encodeUrl($url, $rule->getValue1()),
+            default => $this->encodeParamValue($url, $rule->getValue1()),
+        };
     }
 
     private function applySimpleRule(string $previousUrl, Rule $rule): string
     {
         $url = $previousUrl;
 
-        switch ($rule->getType()) {
-            case Rule::TRIM2Q_TYPE:
-                $url = $this->trim2q($url);
-                break;
-            case Rule::BASE64_TYPE:
-                $url = base64_encode($url);
-                break;
-            case Rule::LOMADEE_TYPE:
-                $url = $this->lomadee($url, strval($rule->getModKeys()[self::AFFCODE]));
-                break;
-            default:
-                return $url;
-        }
-
-        return $url;
+        return match ($rule->getType()) {
+            Rule::TRIM2Q_TYPE => $this->trim2q($url),
+            Rule::BASE64_TYPE => base64_encode($url),
+            Rule::LOMADEE_TYPE => $this->lomadee($url, strval($rule->getModKeys()[self::AFFCODE])),
+            default => $url,
+        };
     }
 
     private function encodeUrl(string $url, ?string $previousDeeplink): string
     {
-        if(empty($previousDeeplink)){
+        if (empty($previousDeeplink)) {
             return $url;
         }
 
@@ -165,7 +141,7 @@ class UrlModifier
     {
         $url = $previousUrl;
 
-        if ((!empty($value)) && (strpos($url, $value) === 0)) {
+        if ((!empty($value)) && (str_starts_with($url, $value))) {
             $url = substr($url, strlen($value));
         }
 
@@ -191,7 +167,7 @@ class UrlModifier
 
         $url = preg_replace($search, $replace, $previousUrl);
 
-        if(empty($url)){
+        if (empty($url)) {
             $url = '';
         }
 
