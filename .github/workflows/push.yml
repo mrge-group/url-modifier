@@ -52,11 +52,6 @@ jobs:
           key: cache-${{vars.URL_PROJECT}}-composer-${{hashFiles('composer.lock')}}
           path: vendor
 
-      - name: Download artifact with file and folder
-        uses: actions/download-artifact@v4
-        with:
-          name: default-environment-${{vars.URL_PROJECT}}
-
       - name: Run tests
         run: php vendor/bin/phpunit --coverage-php="${{env.REPORT_PATH}}/coverage.xml" --log-junit="${{env.REPORT_PATH}}/junit.xml"
 
