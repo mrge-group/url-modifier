@@ -52,6 +52,13 @@ jobs:
           key: cache-${{vars.URL_PROJECT}}-composer-${{hashFiles('composer.lock')}}
           path: vendor
 
+      - name: Install Xdebug
+        run: |
+          apk add --no-cache $PHPIZE_DEPS
+          pecl install xdebug 
+          docker-php-ext-enable xdebug 
+          apk del $PHPIZE_DEPS
+
       - name: Run tests
         run: php vendor/bin/phpunit --coverage-php="${{env.REPORT_PATH}}/coverage.xml" --log-junit="${{env.REPORT_PATH}}/junit.xml"
 
