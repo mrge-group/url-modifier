@@ -33,6 +33,28 @@ jobs:
           composer install -o --no-scripts
           composer audit
 
+  check-quality:
+    name: Check Quality
+    runs-on: self-hosted
+    needs: install-libraries
+    container: composer
+    continue-on-error: true
+
+    steps:
+      - name: Checkout to find changes
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get cached Composer libraries
+        uses: actions/cache@v4
+        with:
+          key: cache-${{vars.URL_PROJECT}}-composer-${{hashFiles('composer.lock')}}
+          path: vendor
+
+      - name: Check code quality
+        run: php -dmemory_limit=-1 vendor/bin/phpstan analyze
+
   test-package:
     name: Test Package
     needs: install-libraries
