@@ -60,7 +60,7 @@ jobs:
           apk del $PHPIZE_DEPS
 
       - name: Run tests
-        run: php vendor/bin/phpunit --coverage-php="${{env.REPORT_PATH}}/coverage.xml" --log-junit="${{env.REPORT_PATH}}/junit.xml"
+        run: php vendor/bin/phpunit tests --coverage-php="${{env.REPORT_PATH}}/coverage.xml" --log-junit="${{env.REPORT_PATH}}/junit.xml"
 
       - name: Archive test results
         uses: actions/upload-artifact@v4
