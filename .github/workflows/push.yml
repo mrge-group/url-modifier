@@ -54,7 +54,7 @@ jobs:
 
       - name: Install Xdebug
         run: |
-          apk add --no-cache $PHPIZE_DEPS
+          apk add --no-cache $PHPIZE_DEPS --update linux-headers
           pecl install xdebug 
           docker-php-ext-enable xdebug 
           apk del $PHPIZE_DEPS
