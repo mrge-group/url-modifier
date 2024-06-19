@@ -29,7 +29,7 @@ class UrlModifier
                 return -1;
             }
 
-            return (($firstRule->getSort() > $secondRule->getSort()) ? 1 : 0);
+            return ($firstRule->getSort() > $secondRule->getSort()) ? 1 : 0;
         });
 
         foreach ($mods as $rule) {
@@ -86,7 +86,7 @@ class UrlModifier
         }
 
         $deeplink = $previousDeeplink;
-        $patternFlexEncoding = '/{url_encoded_([0-9]+)}/';
+        $patternFlexEncoding = '/{url_encoded_(\d+)}/';
 
         preg_match($patternFlexEncoding, $deeplink, $times);
 

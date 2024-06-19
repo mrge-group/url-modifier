@@ -60,6 +60,7 @@ class UrlModifierTest extends TestCase
         $ltrimMods = [[1, Rule::LTRIM_TYPE, 'https://', null], [2, Rule::LTRIM_TYPE, 'http://', null]];
 
         return [
+            ['', self::TEST_URL],
             [
                 'cread.php?awid=31&affid={cpi}&ckref={click_key}&p=%5B%5B{url_encoded_2}%5D%5D',
                 self::TEST_URL . 'cread.php?awid=31&affid=5798314733&ckref=XXX0031&p=%5B%5Bhttps%253A%252F%252Fwww.test'
@@ -84,6 +85,11 @@ class UrlModifierTest extends TestCase
                 . '.com%253Futm_source%253Dsalestube.pl%2526utm_medium%253Dafiliacja%2526utm_content%253D253367997%2526'
                 . 'Partner_ID%253D%252521%252521%252521awc%252521%252521%5D%5D',
                 $addParamsMods,
+            ],
+            [
+                '?c=31&m=98&a={affcode}&r={click_key}&u={url_encoded_1}',
+                self::TEST_URL . '?c=31&m=98&a=5798314733&r=XXX0031&u=https%3A%2F%2Fwww.test.com%2F',
+                [[1, Rule::DEL_PARAM_TYPE, '', null]],
             ],
             [
                 '?c=31&m=98&a={affcode}&r={click_key}&u={url_encoded_1}',
